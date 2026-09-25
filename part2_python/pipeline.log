@@ -28,3 +28,15 @@
 2026-09-25 21:17:01,168 - INFO - Figure saved successfully: figures\temperature_vs_traffic.png
 2026-09-25 21:17:01,171 - INFO - Visualisation interpretations saved to: figures\visualization_interpretations.txt
 2026-09-25 21:17:01,171 - INFO - All visualisations completed successfully
+2026-09-25 21:23:33,372 - INFO - Cleaned dataset loaded for feature engineering
+2026-09-25 21:23:33,376 - INFO - Dataset shape before feature engineering: 48187 rows, 9 columns
+2026-09-25 21:23:33,428 - INFO - Created hour, day_of_week and is_weekend features
+2026-09-25 21:23:33,431 - INFO - Created cyclical hour_sin and hour_cos features
+2026-09-25 21:23:33,434 - INFO - Created adverse_weather indicator
+2026-09-25 21:23:33,447 - INFO - Encoded weather_main using one-hot encoding
+2026-09-25 21:23:33,461 - INFO - Scaled temp, rain_1h and clouds_all
+2026-09-25 21:23:33,463 - DEBUG - Congestion thresholds calculated: 33rd percentile = 2157.00, 66th percentile = 4546.00
+2026-09-25 21:23:33,472 - INFO - Created data-driven congestion_category
+2026-09-25 21:23:33,473 - INFO - Dataset shape after feature engineering: 48187 rows, 29 columns
+2026-09-25 21:23:34,207 - INFO - Feature-engineered dataset saved to: output\feature_engineered_traffic.csv
+2026-09-25 21:23:34,208 - INFO - Feature engineering completed successfully

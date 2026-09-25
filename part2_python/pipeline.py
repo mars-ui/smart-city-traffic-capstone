@@ -266,7 +266,7 @@ def main():
 
         logger.info(
             "Cleaned dataset saved successfully to: %s",
-            output_file
+            output_file.relative_to(Path(__file__).resolve().parent)
         )
 
         logger.info("Pipeline completed successfully.")

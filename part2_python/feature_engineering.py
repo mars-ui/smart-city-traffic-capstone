@@ -206,7 +206,7 @@ def main():
 
         logger.info(
             "Feature-engineered dataset saved to: %s",
-            output_file
+             output_file.relative_to(Path(__file__).resolve().parent)
         )
 
         logger.info(

@@ -1,0 +1,30 @@
+2026-09-25 21:15:35,057 - INFO - Dataset loaded successfully: 48204 rows, 9 columns
+2026-09-25 21:15:35,059 - INFO - Schema validation successful
+2026-09-25 21:15:35,131 - WARNING - 61 rows modified while standardising holiday
+2026-09-25 21:15:35,213 - WARNING - 48204 rows modified while standardising weather_main
+2026-09-25 21:15:35,292 - WARNING - 1730 rows modified while standardising weather_description
+2026-09-25 21:15:35,380 - INFO - All date_time values parsed successfully
+2026-09-25 21:15:35,510 - WARNING - 17 duplicate rows removed
+2026-09-25 21:15:35,573 - WARNING - 10 impossible/missing temperature values imputed using monthly median
+2026-09-25 21:15:35,632 - WARNING - 1 impossible/missing rainfall values imputed using monthly median
+2026-09-25 21:15:35,636 - INFO - Cleaning finished: 48187 rows, 9 columns
+2026-09-25 21:15:36,486 - INFO - Cleaned dataset saved successfully to: output\cleaned_traffic.csv
+2026-09-25 21:15:36,487 - INFO - Pipeline completed successfully.
+2026-09-25 21:16:02,567 - INFO - Cleaned dataset loaded for feature engineering
+2026-09-25 21:16:02,573 - INFO - Dataset shape before feature engineering: 48187 rows, 9 columns
+2026-09-25 21:16:02,660 - INFO - Created hour, day_of_week and is_weekend features
+2026-09-25 21:16:02,667 - INFO - Created cyclical hour_sin and hour_cos features
+2026-09-25 21:16:02,672 - INFO - Created adverse_weather indicator
+2026-09-25 21:16:02,698 - INFO - Encoded weather_main using one-hot encoding
+2026-09-25 21:16:02,715 - INFO - Scaled temp, rain_1h and clouds_all
+2026-09-25 21:16:02,721 - DEBUG - Congestion thresholds calculated: 33rd percentile = 2157.00, 66th percentile = 4546.00
+2026-09-25 21:16:02,748 - INFO - Created data-driven congestion_category
+2026-09-25 21:16:02,749 - INFO - Dataset shape after feature engineering: 48187 rows, 29 columns
+2026-09-25 21:16:04,732 - INFO - Feature-engineered dataset saved to: output\feature_engineered_traffic.csv
+2026-09-25 21:16:04,732 - INFO - Feature engineering completed successfully
+2026-09-25 21:16:59,155 - INFO - Feature-engineered dataset loaded for visualisation: 48187 rows, 29 columns
+2026-09-25 21:16:59,772 - INFO - Figure saved successfully: figures\traffic_by_hour.png
+2026-09-25 21:17:00,144 - INFO - Figure saved successfully: figures\weekday_vs_weekend.png
+2026-09-25 21:17:01,168 - INFO - Figure saved successfully: figures\temperature_vs_traffic.png
+2026-09-25 21:17:01,171 - INFO - Visualisation interpretations saved to: figures\visualization_interpretations.txt
+2026-09-25 21:17:01,171 - INFO - All visualisations completed successfully

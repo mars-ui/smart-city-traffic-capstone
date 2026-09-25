@@ -1,0 +1,6 @@
+1. Traffic by Hour: Average traffic is highest around 16:00 (5664 vehicles) and lowest around 3:00 (371 vehicles). This indicates a clear hourly traffic-demand pattern.
+
+2. Weekday vs Weekend: Average weekday traffic is 3533, while average weekend traffic is 2571. Therefore, weekday traffic is higher than weekend traffic by 963 vehicles on average.
+
+3. Temperature vs Traffic: The correlation between temperature and traffic volume is 0.132. This indicates that temperature alone has only a limited linear relationship with traffic demand.
+

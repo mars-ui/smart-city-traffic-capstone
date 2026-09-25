@@ -32,3 +32,5 @@ Desktop.ini
 # Credentials
 credentials.json
 secrets.json
+
+part2_python/output/

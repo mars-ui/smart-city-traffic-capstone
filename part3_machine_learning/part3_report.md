@@ -83,6 +83,8 @@ The Logistic Regression model achieved slightly higher recall, but with lower pr
 
 These results demonstrate strong ability to reproduce the engineered proxy target. They do not demonstrate actual accident-prediction ability because the target itself is an artificial proxy.
 
+Because the proxy target is constructed partly from weather conditions and the classifier also uses weather-derived predictors, the reported classification performance may be optimistic due to conceptual overlap between the proxy definition and some predictors. The classifier should therefore be interpreted only as a demonstration of the required proxy-classification workflow.
+
 ---
 
 ## 1.3 Regression Models
@@ -118,25 +120,49 @@ K-means clustering was applied to traffic operating conditions using:
 - Weather severity
 - Weekend indicator
 
-Four clusters were generated.
+All clustering features were standardised before fitting. Candidate values from **k = 2 to k = 8** were evaluated using both inertia and silhouette score.
+
+| k | Inertia | Silhouette Score |
+|---:|---:|---:|
+| 2 | 135,118.40 | 0.3361 |
+| 3 | 101,271.04 | 0.3860 |
+| 4 | 79,766.43 | 0.3738 |
+| 5 | 64,533.49 | 0.4098 |
+| 6 | 49,778.57 | 0.4530 |
+| 7 | 43,078.49 | 0.4670 |
+| 8 | 36,537.27 | 0.4822 |
+
+Among the tested candidates, **k = 8** achieved the highest silhouette score (**0.4822**) and was selected for the final clustering analysis. This selection is limited to the tested range and should not be interpreted as a universal optimum.
+
+The final cluster profiles were:
 
 | Cluster | Records | Avg Hour | Avg Traffic | Avg Weather Severity | Weekend Share |
 |---|---:|---:|---:|---:|---:|
-| 0 | 15,331 | 14.87 | 4,485.55 | 0.00 | 0.00 |
-| 1 | 8,623 | 2.51 | 824.65 | 0.63 | 0.00 |
-| 2 | 13,548 | 11.30 | 2,558.80 | 0.57 | 1.00 |
-| 3 | 10,685 | 13.71 | 4,354.31 | 1.60 | 0.01 |
+| 0 | 2,792 | 11.11 | 2,523.71 | 2.02 | 1.00 |
+| 1 | 14,033 | 11.75 | 5,338.65 | 0.26 | 0.00 |
+| 2 | 4,070 | 2.68 | 894.59 | 1.48 | 0.00 |
+| 3 | 6,229 | 20.70 | 2,594.72 | 0.21 | 0.00 |
+| 4 | 5,273 | 14.48 | 4,332.01 | 2.10 | 0.00 |
+| 5 | 4,283 | 4.06 | 994.19 | 0.31 | 1.00 |
+| 6 | 6,625 | 16.20 | 3,609.70 | 0.18 | 1.00 |
+| 7 | 4,882 | 2.57 | 878.58 | 0.00 | 0.00 |
 
 The clusters can be interpreted as follows:
 
 | Cluster | Interpretation |
 |---|---|
-| 0 | Higher weekday traffic under mostly mild weather |
-| 1 | Low overnight weekday traffic with mixed weather |
-| 2 | Moderate weekend traffic with mixed weather |
-| 3 | Higher weekday traffic associated with more severe weather |
+| 0 | Moderate traffic, more severe weather, weekend-oriented |
+| 1 | High traffic, mostly mild weather, weekday-oriented |
+| 2 | Low traffic, mixed weather, weekday-oriented |
+| 3 | Moderate evening traffic, mostly mild weather, weekday-oriented |
+| 4 | Moderate traffic, more severe weather, weekday-oriented |
+| 5 | Low early-hour traffic, mostly mild weather, weekend-oriented |
+| 6 | Moderate traffic, mostly mild weather, weekend-oriented |
+| 7 | Low overnight traffic, mostly mild weather, weekday-oriented |
 
-The clustering demonstrates that traffic conditions naturally separate according to time, day type, demand and weather characteristics.
+The evaluation results are stored in `results/kmeans_evaluation.csv` and visualised in `figures/kmeans_evaluation.png`. The fitted clustering model and preprocessing scaler are persisted as `models/kmeans_model.joblib` and `models/kmeans_scaler.joblib`.
+
+The clustering demonstrates that traffic conditions separate into meaningful combinations of demand level, time, day type and weather severity.
 
 ---
 
@@ -263,13 +289,19 @@ MLflow records:
 - Model artifacts
 - Project metadata
 
-A local SQLite MLflow tracking database is stored as:
+A local SQLite MLflow tracking database is generated as:
 
 `mlflow.db`
+
+The raw database and MLflow artifact store are intentionally excluded from GitHub because they contain environment-specific metadata and large local artifacts. Reproducible, sanitized run evidence is exported to:
+
+`results/mlflow_runs.csv`
 
 Model-version comparisons are also recorded in:
 
 `results/model_versions.csv`
+
+The sanitized run evidence records the experiment name, run identifiers, model type/version, completion status and evaluation metrics for all four runs without exporting local filesystem paths or user-specific metadata.
 
 ---
 
@@ -311,7 +343,7 @@ The system:
 - Considers weather conditions
 - Produces plain-language travel recommendations
 
-A minimum practical travel range of 05:00–22:00 was analysed to avoid recommending impractical overnight travel periods.
+Candidate one-hour travel windows use start hours from **05:00 through 22:00 inclusive**, allowing the final candidate window to run from 22:00 to 23:00 while avoiding impractical overnight recommendations.
 
 Example weekday recommendation:
 
@@ -345,7 +377,7 @@ MLflow was used to track:
 - Experiment runs
 - Model artifacts
 
-The experiment is stored locally in `mlflow.db`.
+The experiment is tracked locally in `mlflow.db`. The raw local tracking store is excluded from GitHub, while `results/mlflow_runs.csv` provides sanitized evidence of the completed MLflow runs and `results/model_versions.csv` provides the version comparison.
 
 ---
 
@@ -386,49 +418,38 @@ A monitoring simulation was implemented in:
 
 `monitoring.py`
 
-The chronologically ordered observations were divided into:
+To avoid overlap between training data and the simulated monitoring windows, the chronologically ordered observations were divided into:
 
-- Earlier 80%: reference window
-- Latest 20%: simulated current monitoring window
+- Earliest 70%: monitoring-model training window (**33,730 records**)
+- Next 10%: unseen baseline/reference window (**4,819 records**)
+- Latest 20%: unseen simulated current/live window (**9,638 records**)
+
+A fresh clone of the Random Forest Regressor configuration was trained only on the earliest 70%. The baseline and current monitoring windows therefore remained out-of-sample for this monitoring simulation.
 
 Two monitoring approaches were used.
 
 ### Prediction Error Monitoring
 
-The Random Forest Regressor baseline MAE was:
+The unseen baseline-window MAE was **263.16**.
 
-**268.67**
+An alert threshold was set at 125% of baseline MAE: **328.95**.
 
-An alert threshold was set at 125% of baseline MAE:
-
-**335.84**
-
-The monitored current MAE was:
-
-**132.01**
-
-The prediction-error check therefore passed.
+The simulated current-window MAE was **321.24**, a **22.07% increase** relative to baseline. Because 321.24 remained below 328.95, the prediction-error drift check did **not** trigger an alert.
 
 ### Feature Distribution Monitoring
 
-Feature distribution drift was evaluated using standardised mean difference.
-
-The alert threshold was:
-
-**SMD > 0.50**
-
-Results were:
+Feature distribution drift was evaluated using standardised mean difference, with an alert threshold of **SMD > 0.50**.
 
 | Feature | SMD | Drift |
 |---|---:|---|
-| Hour | 0.001 | No |
-| Temperature | 0.064 | No |
-| Rainfall | 0.034 | No |
-| Snowfall | 0.030 | No |
-| Cloud coverage | 0.072 | No |
-| Weather severity | 0.093 | No |
+| Hour | 0.004 | No |
+| Temperature | 1.445 | **Yes** |
+| Rainfall | 0.000 | No |
+| Snowfall | 0.000 | No |
+| Cloud coverage | 0.022 | No |
+| Weather severity | 0.027 | No |
 
-No feature exceeded the drift threshold.
+Temperature exceeded the drift threshold substantially. Because the monitoring windows are chronological, this shift may reflect seasonal or temporal changes in temperature distribution and should be investigated rather than treated automatically as model failure.
 
 ---
 
@@ -441,9 +462,11 @@ The monitoring system generates one of two statuses:
 
 For the current monitoring simulation:
 
-**SYSTEM STATUS: PASS / Normal**
+**SYSTEM STATUS: ALERT / Requires investigation**
 
-In production, an ALERT would trigger investigation, validation of incoming data and model performance, and possible retraining or rollback.
+The alert was triggered by temperature distribution drift, while prediction-error drift remained below its configured threshold.
+
+In production, an ALERT would trigger investigation of incoming-data quality, seasonal/contextual changes, model performance and whether recalibration, retraining or rollback is appropriate. An alert is an investigation signal rather than proof that the model has failed.
 
 ---
 
@@ -510,11 +533,13 @@ For traffic-volume prediction:
 
 This suggests that nonlinear relationships are important in traffic demand.
 
+K-means evaluation selected k = 8 from the tested k = 2–8 range using the highest silhouette score (0.4822), producing interpretable traffic-condition segments.
+
 Association-rule analysis also showed that overnight periods are strongly associated with low congestion.
 
 The travel recommendation system translates these historical patterns into practical timing recommendations.
 
-Finally, the MLOps components demonstrate that predictive performance alone is insufficient for operational AI. Model versioning, experiment tracking, deployment controls, monitoring, alerting, explainability and governance are all required to support a reliable intelligent mobility solution.
+Finally, the MLOps components demonstrate that predictive performance alone is insufficient for operational AI. The chronological monitoring simulation detected substantial temperature distribution drift and correctly raised an investigation alert even though prediction-error drift remained below threshold. Model versioning, experiment tracking, deployment controls, monitoring, alerting, explainability and governance are all required to support a reliable intelligent mobility solution.
 
 ---
 

@@ -1,0 +1,5 @@
+experiment_name,experiment_id,run_name,run_id,model_name,model_type,model_version,status,accuracy,precision,recall,f1,roc_auc,mae,r2
+smart_city_traffic_models,1,classification_v1_logistic,479b5fad615946d3817aa34341df8a0d,Logistic Regression,classification,v1,FINISHED,0.956733762191326,0.8094768015794669,0.9814482345900658,0.8872058425750609,0.9914684729205759,,
+smart_city_traffic_models,1,classification_v2_random_forest,ecac16da1b8a4c1fa1648e0199abd92a,Random Forest Classifier,classification,v2,FINISHED,0.9798713426021997,0.935693215339233,0.9491322561340515,0.942364824717766,0.9964209034920153,,
+smart_city_traffic_models,1,regression_v1_linear,243564d404f34c6e92dcf33dab949a80,Linear Regression,regression,v1,FINISHED,,,,,,813.4746028356138,0.7259608694002566
+smart_city_traffic_models,1,regression_v2_random_forest,25faa35bf8b94773a4ad86c45d0ab0ac,Random Forest Regressor,regression,v2,FINISHED,,,,,,268.6734037572835,0.9454365741873674

@@ -35,3 +35,5 @@ secrets.json
 
 part2_python/output/
 mlruns/
+part3_machine_learning/mlflow.db
+part3_machine_learning/part3.log

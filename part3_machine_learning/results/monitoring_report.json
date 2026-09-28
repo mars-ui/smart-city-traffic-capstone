@@ -1,0 +1,17 @@
+{
+    "monitoring_method": {
+        "reference_window": "Earlier 80% of chronologically ordered observations",
+        "current_window": "Latest 20% of chronologically ordered observations",
+        "prediction_error_rule": "Alert when monitored MAE exceeds 125% of baseline MAE",
+        "feature_drift_rule": "Alert when standardised mean difference exceeds 0.50"
+    },
+    "prediction_error_monitoring": {
+        "baseline_mae": 268.6734037572835,
+        "current_mae": 132.00812631053665,
+        "alert_threshold_mae": 335.84175469660437,
+        "error_drift_alert": false
+    },
+    "feature_distribution_alert": false,
+    "features_with_drift": [],
+    "overall_status": "PASS / Normal"
+}

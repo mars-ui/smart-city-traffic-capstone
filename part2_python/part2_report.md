@@ -1,49 +1,47 @@
 # Part 2 – Python Data Engineering and Traffic Analytics Report
 
-## 1. Methodology
+## Methodology
 
-A Python-based data engineering workflow was developed to prepare the Metro Interstate Traffic Volume dataset for analytics and subsequent machine learning tasks.
+Part 2 focused on building a reproducible Python workflow around the Metro Interstate Traffic Volume dataset. The raw file contained 48,204 rows and 9 columns.
 
-The raw dataset contained 48,204 rows and 9 columns. The pipeline first validated that all required columns were present before performing any transformation. Categorical fields including holiday, weather type and weather description were standardised to improve consistency.
+The pipeline first checked that all required columns were present before any cleaning was carried out. Categorical fields such as holiday, weather type and weather description were standardised, and the `date_time` field was converted to a proper datetime format.
 
-The `date_time` field was converted into a valid datetime format. Duplicate records were identified and 17 duplicate rows were removed. Data-quality checks were also applied to physically impossible or missing sensor values. Ten invalid or missing temperature observations and one invalid or missing rainfall observation were handled using monthly median imputation. After cleaning, the dataset contained 48,187 rows.
+During cleaning, 17 duplicate rows were identified and removed. Data-quality checks also found 10 invalid or missing temperature values and one invalid or missing rainfall value. These were handled using monthly median values so that the replacement reflected the relevant period rather than using one overall value for the whole dataset. After cleaning, 48,187 rows remained.
 
-Logging was implemented throughout the workflow using Python's `logging` module. INFO messages record successful processing stages and dataset dimensions, WARNING messages identify modified, removed or imputed records, DEBUG messages record intermediate calculations, and ERROR messages capture failures or invalid user input.
+Logging was included throughout the workflow so that each stage could be traced. INFO messages record normal processing steps, WARNING messages record changes such as removed or imputed values, DEBUG messages capture intermediate calculations, and ERROR messages are used when processing cannot continue or when invalid input is supplied.
 
-## 2. Feature Engineering
+## Feature Engineering
 
-The cleaned dataset was transformed into an ML-ready dataset containing 29 columns.
+The cleaned data was then prepared for later analysis and machine-learning work.
 
-Time-based features included hour of day, day of week and a weekend indicator. Hour was also represented using sine and cosine cyclical encoding.
+New time-related features included hour of day, day of week and a weekend indicator. Hour was also represented using sine and cosine values so that the cyclical nature of time could be retained.
 
-Weather information was enhanced through an adverse-weather indicator and one-hot encoding of weather categories.
+Weather information was expanded using an adverse-weather indicator and one-hot encoded weather categories. Continuous variables such as temperature, rainfall and cloud cover were also standardised.
 
-Continuous variables including temperature, rainfall and cloud cover were standardised using `StandardScaler`.
+A data-driven congestion category was created from the traffic-volume distribution so that traffic conditions could be grouped into low, medium and high demand levels.
 
-A data-driven congestion category was created from traffic-volume percentile thresholds to classify traffic demand as low, medium or high.
+## Traffic Patterns
 
-## 3. Traffic Pattern Findings
+Three Matplotlib visualisations were produced to examine the main traffic patterns.
 
-Three Matplotlib visualisations were produced.
+The clearest result was the variation by time of day. Average traffic was highest at around 16:00, at approximately 5,664 vehicles, while the lowest average occurred around 03:00, at about 371 vehicles.
 
-Average traffic volume showed a strong hourly pattern. The highest average traffic occurred at approximately 16:00, with around 5,664 vehicles, while the lowest average traffic occurred around 03:00, with approximately 371 vehicles.
+There was also a noticeable difference between weekdays and weekends. Average weekday traffic was approximately 3,533 vehicles compared with about 2,571 vehicles on weekends, a difference of roughly 963 vehicles.
 
-Average weekday traffic was approximately 3,533 vehicles compared with 2,571 vehicles during weekends, a difference of approximately 963 vehicles.
+Temperature showed only a weak relationship with traffic volume. The correlation was approximately 0.132, so temperature by itself does not explain much of the variation in traffic demand.
 
-The relationship between temperature and traffic volume was weak. The correlation was approximately 0.132, indicating only a weak positive linear relationship.
+## Mini Traffic Analytics Application
 
-## 4. Mini Traffic Analytics Application
+A small command-line application was developed to make the processed data easier to query. It supports three main types of analysis:
 
-A command-line traffic analytics application was developed with three functions:
+- retrieving traffic information for a selected date,
+- identifying periods above a user-defined traffic threshold,
+- comparing weekday and weekend traffic patterns.
 
-- Query traffic information for a specified date.
-- Identify periods where traffic exceeds a user-defined threshold.
-- Compare weekday and weekend traffic patterns.
+The application also checks user input and logs errors clearly instead of exposing an unhandled traceback.
 
-The application validates user input and logs errors clearly instead of exposing an unhandled traceback.
+## Conclusion
 
-## 5. Conclusion
+Part 2 produced a cleaned and reproducible traffic dataset that could be used directly in Part 3. The main finding from the Python analysis was that time-related behaviour is much more pronounced than the relationship between temperature and traffic volume.
 
-The Part 2 workflow provides a reproducible foundation for Part 3 machine learning work. The raw traffic data is validated, cleaned, transformed, logged and converted into ML-ready features.
-
-The analysis indicates that time-related variables are likely to be important predictors of traffic demand, while temperature alone has only a weak relationship with traffic volume.
+The workflow also provides a traceable processing history through logging and a simple way for users to query the data through the command-line application. These outputs formed the practical data-engineering base for the machine-learning work in the next stage of the capstone.

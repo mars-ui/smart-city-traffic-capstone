@@ -1,45 +1,16 @@
 # Part 3 – Machine Learning and AI: Intelligent Mobility Solution
 
-## 1. Overview
+## Overview
 
-Part 3 extends the traffic analytics and reproducible Python pipeline developed in Parts 1 and 2 into an intelligent mobility solution.
+Part 3 builds on the traffic analysis and Python data pipeline developed in Parts 1 and 2. The cleaned Metro Interstate Traffic Volume dataset contained 48,187 observations and was used to develop the machine-learning, explainability, recommendation and MLOps components of the project.
 
-The work covers supervised machine learning, unsupervised learning, deep learning, model explainability, advanced AI using MLflow, travel-time recommendations, MLOps deployment and monitoring, and responsible and sustainable AI.
+No real accident dataset was provided. Following the capstone instructions, a proxy accident-risk label was therefore created only to demonstrate the classification workflow. The resulting classifier should not be interpreted as a model of actual accident occurrence.
 
-The dataset used is the cleaned Metro Interstate Traffic Volume dataset produced in Part 2.
+## Task 1 – Supervised Machine Learning
 
-After data cleaning, 48,187 observations were available for modelling.
+The Part 3 preparation workflow was implemented in `prepare_ml_data.py`. The common feature set included hour, day of week, weekend status, cyclical hour and day encodings, holiday information, temperature, rainfall, snowfall, cloud cover and several encoded weather indicators.
 
-No real accident dataset was provided. Therefore, in accordance with the capstone instructions, a proxy accident-risk label was created solely to demonstrate the classification workflow. It must not be interpreted as a model of actual accident occurrence.
-
----
-
-# Task 1 – Supervised Machine Learning
-
-## 1.1 Feature Engineering and Proxy Risk Label
-
-The Part 3 preparation workflow was implemented in:
-
-`prepare_ml_data.py`
-
-A common engineered feature set was created containing:
-
-- Hour
-- Day of week
-- Weekend indicator
-- Cyclical hour encoding
-- Cyclical day-of-week encoding
-- Holiday indicator
-- Temperature
-- Rainfall
-- Snowfall
-- Cloud coverage
-- Weather encoding
-- Weather severity
-- Severe-weather indicator
-- Low-visibility indicator
-
-Traffic congestion categories were calculated from traffic-volume quartiles:
+Traffic volume was first divided into quartile-based congestion categories:
 
 | Category | Definition |
 |---|---|
@@ -48,79 +19,43 @@ Traffic congestion categories were calculated from traffic-volume quartiles:
 | High | Q2 < traffic volume <= Q3 |
 | Severe | Traffic volume > Q3 |
 
-The proxy high-risk classification target was defined as:
+The proxy high-risk label was then defined as High or Severe congestion occurring together with severe or low-visibility weather. This produced 39,834 non-high-risk records and 8,353 high-risk records.
 
-**High/Severe congestion AND severe or low-visibility weather.**
+`traffic_volume` and `congestion_category` were excluded from the classification predictor set to avoid direct target leakage.
 
-The resulting proxy-label distribution was:
+### Classification
 
-| Proxy class | Records |
-|---|---:|
-| Non-high-risk | 39,834 |
-| High-risk | 8,353 |
-
-Traffic volume and congestion category were excluded from the classification predictor set to avoid direct target leakage.
-
----
-
-## 1.2 Classification Models
-
-Two classification algorithms were evaluated:
-
-1. Logistic Regression
-2. Random Forest Classifier
-
-The evaluation metrics were:
+Two classifiers were compared: Logistic Regression and Random Forest.
 
 | Model | Accuracy | Precision | Recall | F1 | ROC AUC |
 |---|---:|---:|---:|---:|---:|
 | Logistic Regression | 0.9567 | 0.8095 | 0.9814 | 0.8872 | 0.9915 |
 | Random Forest Classifier | 0.9799 | 0.9357 | 0.9491 | 0.9424 | 0.9964 |
 
-The Random Forest Classifier produced the strongest overall classification performance, with an F1-score of 0.9424 and ROC AUC of 0.9964.
+The Random Forest produced the stronger overall result, with an F1-score of 0.9424 and ROC AUC of 0.9964. Logistic Regression achieved slightly higher recall, but at the cost of lower precision and F1.
 
-The Logistic Regression model achieved slightly higher recall, but with lower precision and overall F1-score.
+These results show that the models reproduce the engineered proxy label well. They should not be interpreted as real accident-prediction performance. The proxy itself is partly constructed from weather conditions, and weather-derived variables are also used as predictors, so some conceptual overlap remains between the target definition and the model inputs.
 
-These results demonstrate strong ability to reproduce the engineered proxy target. They do not demonstrate actual accident-prediction ability because the target itself is an artificial proxy.
+### Regression
 
-Because the proxy target is constructed partly from weather conditions and the classifier also uses weather-derived predictors, the reported classification performance may be optimistic due to conceptual overlap between the proxy definition and some predictors. The classifier should therefore be interpreted only as a demonstration of the required proxy-classification workflow.
-
----
-
-## 1.3 Regression Models
-
-Traffic volume was predicted using:
-
-1. Linear Regression
-2. Random Forest Regressor
-
-Results were:
+Traffic volume was predicted using Linear Regression and Random Forest Regression.
 
 | Model | MAE | R² |
 |---|---:|---:|
 | Linear Regression | 813.47 | 0.7260 |
 | Random Forest Regressor | 268.67 | 0.9454 |
 
-The Random Forest Regressor substantially outperformed Linear Regression.
+The Random Forest Regressor performed substantially better. Its MAE was about 269 vehicles compared with more than 813 for Linear Regression, while its R² of 0.9454 indicates that most of the variation in traffic volume was captured within the evaluation data.
 
-An R² of 0.9454 indicates that the Random Forest captured most of the variation in traffic demand within the evaluation data, while the MAE of approximately 269 vehicles was considerably lower than the Linear Regression result.
+The difference between the two models also suggests that traffic demand contains nonlinear relationships that are not handled as effectively by a simple linear model.
 
-The improvement indicates that traffic demand contains nonlinear patterns that are better captured by an ensemble tree model.
+## Task 2 – Unsupervised Machine Learning
 
----
+### K-means Clustering
 
-# Task 2 – Unsupervised Machine Learning
+K-means was used to group traffic operating conditions using hour, traffic volume, weather severity and weekend status. All clustering variables were standardised before fitting.
 
-## 2.1 K-Means Clustering
-
-K-means clustering was applied to traffic operating conditions using:
-
-- Hour
-- Traffic volume
-- Weather severity
-- Weekend indicator
-
-All clustering features were standardised before fitting. Candidate values from **k = 2 to k = 8** were evaluated using both inertia and silhouette score.
+Rather than selecting the number of clusters arbitrarily, candidate values from k = 2 to k = 8 were compared using both inertia and silhouette score.
 
 | k | Inertia | Silhouette Score |
 |---:|---:|---:|
@@ -132,9 +67,9 @@ All clustering features were standardised before fitting. Candidate values from 
 | 7 | 43,078.49 | 0.4670 |
 | 8 | 36,537.27 | 0.4822 |
 
-Among the tested candidates, **k = 8** achieved the highest silhouette score (**0.4822**) and was selected for the final clustering analysis. This selection is limited to the tested range and should not be interpreted as a universal optimum.
+Among the tested values, k = 8 gave the highest silhouette score, 0.4822, and was therefore used for the final clustering analysis. This only identifies the best result within the tested range rather than claiming that eight clusters are universally optimal.
 
-The final cluster profiles were:
+The eight clusters showed clear differences in traffic level, time of day, day type and weather severity.
 
 | Cluster | Records | Avg Hour | Avg Traffic | Avg Weather Severity | Weekend Share |
 |---|---:|---:|---:|---:|---:|
@@ -147,37 +82,13 @@ The final cluster profiles were:
 | 6 | 6,625 | 16.20 | 3,609.70 | 0.18 | 1.00 |
 | 7 | 4,882 | 2.57 | 878.58 | 0.00 | 0.00 |
 
-The clusters can be interpreted as follows:
+For example, Cluster 1 represents high weekday traffic under mostly mild weather, while Clusters 5 and 7 represent low early-hour or overnight traffic. Clusters 0 and 4 contain noticeably higher weather-severity values.
 
-| Cluster | Interpretation |
-|---|---|
-| 0 | Moderate traffic, more severe weather, weekend-oriented |
-| 1 | High traffic, mostly mild weather, weekday-oriented |
-| 2 | Low traffic, mixed weather, weekday-oriented |
-| 3 | Moderate evening traffic, mostly mild weather, weekday-oriented |
-| 4 | Moderate traffic, more severe weather, weekday-oriented |
-| 5 | Low early-hour traffic, mostly mild weather, weekend-oriented |
-| 6 | Moderate traffic, mostly mild weather, weekend-oriented |
-| 7 | Low overnight traffic, mostly mild weather, weekday-oriented |
+The evaluation results are stored in `results/kmeans_evaluation.csv` and visualised in `figures/kmeans_evaluation.png`. The final model and scaler are also saved so that the clustering can be reproduced.
 
-The evaluation results are stored in `results/kmeans_evaluation.csv` and visualised in `figures/kmeans_evaluation.png`. The fitted clustering model and preprocessing scaler are persisted as `models/kmeans_model.joblib` and `models/kmeans_scaler.joblib`.
+### Association Rule Mining
 
-The clustering demonstrates that traffic conditions separate into meaningful combinations of demand level, time, day type and weather severity.
-
----
-
-## 2.2 Association Rule Mining
-
-Association rules were generated using:
-
-- Time of day
-- Weekday/weekend
-- Weather group
-- Congestion category
-
-The strongest rules were ranked by lift.
-
-Examples include:
+Association rules were generated from time of day, weekday/weekend status, weather group and congestion category. The rules were ranked by lift.
 
 | Antecedent | Consequent | Confidence | Lift |
 |---|---|---:|---:|
@@ -187,50 +98,26 @@ Examples include:
 | Overnight | Low congestion | 0.849 | 3.395 |
 | Midday AND Weekend | High congestion | 0.824 | 3.292 |
 
-The strongest finding is that overnight travel is substantially associated with low-congestion conditions.
+The strongest pattern is the association between overnight travel and low congestion. The weekend-midday rule is also useful because it shows that weekends should not automatically be treated as low-demand periods.
 
-The weekend midday rule also indicates that some weekend periods can still experience high traffic and should not automatically be treated as low-demand periods.
+## Task 3 – Deep Learning and Explainability
 
----
+A feed-forward neural network was developed to predict traffic volume. The network used the engineered traffic features as input, followed by a 64-unit ReLU layer, dropout, a 32-unit ReLU layer and a single continuous output node. Adam optimisation and mean squared error loss were used.
 
-# Task 3 – Deep Learning and Explainability
-
-## 3.1 Neural Network Demand Prediction
-
-A feed-forward neural network was developed to predict traffic volume.
-
-The architecture contained:
-
-- Input layer using the engineered traffic features
-- Dense layer with 64 ReLU units
-- Dropout layer
-- Dense layer with 32 ReLU units
-- Single continuous output node
-
-Adam optimisation and mean squared error loss were used.
-
-The network completed 25 epochs.
-
-Results were:
+After 25 epochs, the neural network achieved:
 
 | Metric | Result |
 |---|---:|
 | MAE | 355.93 |
 | R² | 0.9250 |
 
-The neural network achieved strong predictive performance but did not outperform the Random Forest Regressor.
+The neural network performed well, but it did not outperform the Random Forest Regressor. For that reason, the Random Forest remained the preferred model for the deployment simulation.
 
-The Random Forest therefore remained the preferred model for the deployment simulation.
+### SHAP Explainability
 
----
+SHAP was used to explain the Random Forest Regressor trained on the same traffic-volume prediction problem. TreeSHAP was selected because it provides an efficient way to calculate feature attributions for tree-based ensemble models.
 
-## 3.2 SHAP Explainability
-
-SHAP was used to explain the Random Forest Regressor trained on the same traffic-volume prediction problem.
-
-A tree-based explainability model was selected because TreeSHAP provides efficient feature-attribution values for ensemble tree models.
-
-The highest-impact SHAP features were:
+The features with the highest mean absolute SHAP values were:
 
 | Feature | Mean Absolute SHAP |
 |---|---:|
@@ -245,33 +132,15 @@ The highest-impact SHAP features were:
 | clouds_all | 29.14 |
 | weather_severity | 26.21 |
 
-The result indicates that traffic-volume predictions are driven primarily by temporal patterns.
+The strongest contributions came from time-related variables, particularly hour and cyclical time features. This agrees with the earlier analytics work, where traffic volume changed substantially by time of day and between weekdays and weekends.
 
-This is consistent with the earlier traffic analysis, which showed substantial variation in demand by hour and weekday/weekend status.
+SHAP values describe how the model makes predictions. They should not be interpreted as evidence that these variables cause changes in traffic.
 
-SHAP values explain model behaviour but should not be interpreted as evidence of causality.
+## Task 4 – Advanced AI Technique: MLflow
 
----
+MLflow was selected because experiment tracking and model versioning fit naturally with the MLOps requirements of the project. It also provides a practical way to compare models without relying on manually recorded results.
 
-# Task 4 – Advanced AI Technique: MLflow
-
-## 4.1 Technique Selection
-
-MLflow was selected as the advanced AI technique because it directly supports reproducibility, experiment tracking and model lifecycle management.
-
-It also integrates naturally with the MLOps requirements of the capstone.
-
----
-
-## 4.2 Implementation
-
-A local MLflow experiment named:
-
-`smart_city_traffic_models`
-
-was created.
-
-Four model versions were tracked:
+A local MLflow experiment called `smart_city_traffic_models` was created. Four supervised model versions were tracked:
 
 | Version | Model | Task |
 |---|---|---|
@@ -280,288 +149,113 @@ Four model versions were tracked:
 | regression_v1 | Linear Regression | Regression |
 | regression_v2 | Random Forest Regressor | Regression |
 
-MLflow records:
+The experiment records model parameters, evaluation metrics, model versions, run information, artifacts and project metadata.
 
-- Experiment runs
-- Model type
-- Model version
-- Evaluation metrics
-- Model artifacts
-- Project metadata
+MLflow uses a local SQLite database, `mlflow.db`, during execution. The raw database and local artifact store are excluded from GitHub because they contain environment-specific paths and potentially large artifacts. Instead, sanitized evidence of the completed runs is exported to `results/mlflow_runs.csv`, while `results/model_versions.csv` records the model-version comparison.
 
-A local SQLite MLflow tracking database is generated as:
+This approach keeps the public repository reproducible without exposing local filesystem details.
 
-`mlflow.db`
+MLflow adds value by keeping model experiments traceable and making model comparisons easier. In a production environment, however, the current local setup would need to be replaced or extended with shared tracking infrastructure, authentication, centralised artifact storage, formal model approval, registry controls, backup and retention policies.
 
-The raw database and MLflow artifact store are intentionally excluded from GitHub because they contain environment-specific metadata and large local artifacts. Reproducible, sanitized run evidence is exported to:
+## Task 5 – Traffic Recommendation System
 
-`results/mlflow_runs.csv`
+Because the dataset represents a single road corridor, the recommendation component focuses on **when to travel** rather than suggesting alternative routes.
 
-Model-version comparisons are also recorded in:
+`recommendation_system.py` identifies historically lower-traffic periods while considering day type and, where relevant, weather conditions. Candidate one-hour windows use start hours from 05:00 through 22:00, so the latest recommendation can run from 22:00 to 23:00 without selecting impractical overnight periods.
 
-`results/model_versions.csv`
-
-The sanitized run evidence records the experiment name, run identifiers, model type/version, completion status and evaluation metrics for all four runs without exporting local filesystem paths or user-specific metadata.
-
----
-
-## 4.3 Value
-
-MLflow improves reproducibility by preserving a traceable record of model experiments and their evaluation results.
-
-It enables comparison between model versions and provides a foundation for controlled promotion of models from experimentation toward production.
-
----
-
-## 4.4 Limitations
-
-The MLflow implementation is a local capstone simulation.
-
-A production implementation would normally require:
-
-- Shared or managed tracking infrastructure
-- Authentication and access control
-- Centralised artifact storage
-- Formal model approval workflows
-- Production model registry and deployment controls
-- Backup and retention policies
-
----
-
-# Task 5 – Traffic Recommendation System
-
-A travel-time recommendation system was implemented in:
-
-`recommendation_system.py`
-
-Because the dataset represents a single corridor, the system recommends **when to travel** rather than selecting an alternative route.
-
-The system:
-
-- Identifies historically lower-traffic periods
-- Distinguishes weekday and weekend behaviour
-- Considers weather conditions
-- Produces plain-language travel recommendations
-
-Candidate one-hour travel windows use start hours from **05:00 through 22:00 inclusive**, allowing the final candidate window to run from 22:00 to 23:00 while avoiding impractical overnight recommendations.
-
-Example weekday recommendation:
+For a typical weekday, the system produced:
 
 > For a weekday journey, consider travelling between 22:00 and 23:00. Historical traffic volume during this window averages approximately 2,126 vehicles.
 
-Weather-aware example:
+When rain was included as a condition, the result was:
 
 > For a weekday journey during rain weather, consider travelling between 22:00 and 23:00. Historical traffic volume during this window averages approximately 1,999 vehicles.
 
-The recommendations are based on historical traffic behaviour rather than guaranteed future conditions.
+These recommendations are based on historical averages. They are intended as decision support and do not guarantee future traffic conditions.
 
----
+## Task 6 – MLOps and Deployment Simulation
 
-# Task 6 – MLOps and Deployment Simulation
+### Model Versioning and Experiment Tracking
 
-## 6.1 Model Versioning
+The four supervised model versions were documented and compared using the same evaluation metrics used during modelling. MLflow records the experiment runs, parameters, metrics, versions and artifacts, while sanitized evidence is kept in the repository.
 
-Four supervised model versions were documented and compared using their evaluation metrics.
+### FastAPI Deployment Simulation
 
-The Random Forest Classifier and Random Forest Regressor were the strongest ensemble versions for their respective tasks.
+A FastAPI mock-up was developed in `deployment_api.py`. It loads the trained Random Forest Regressor and exposes a prediction endpoint.
 
----
+The input includes hour, day of week, holiday status, temperature, rainfall, snowfall, cloud cover and weather condition. The API recreates the feature engineering required by the trained model before returning the prediction.
 
-## 6.2 Experiment Tracking
+A local self-test using a Tuesday at 10:00 under clear weather produced a predicted traffic volume of **4,422.83 vehicles**. This confirms that the trained model can be loaded and served through an API-style interface.
 
-MLflow was used to track:
+### Monitoring
 
-- Parameters
-- Evaluation metrics
-- Model versions
-- Experiment runs
-- Model artifacts
+A chronological monitoring simulation was used so that monitoring performance would not be evaluated on observations already used to train the monitoring model.
 
-The experiment is tracked locally in `mlflow.db`. The raw local tracking store is excluded from GitHub, while `results/mlflow_runs.csv` provides sanitized evidence of the completed MLflow runs and `results/model_versions.csv` provides the version comparison.
+The data was divided into:
 
----
+- earliest 70% for monitoring-model training: **33,730 records**
+- next 10% as an unseen baseline window: **4,819 records**
+- latest 20% as an unseen current window: **9,638 records**
 
-## 6.3 Deployment Simulation
+A fresh Random Forest model with the same configuration was trained only on the earliest 70%.
 
-A FastAPI deployment mock-up was implemented in:
+The baseline MAE was **263.16**. An error-drift threshold was set at 125% of baseline MAE, giving a threshold of **328.95**. The current-window MAE was **321.24**, representing an increase of **22.07%**, but it remained below the configured error threshold.
 
-`deployment_api.py`
-
-The API loads the trained Random Forest Regressor and exposes a prediction endpoint.
-
-The input schema includes:
-
-- Hour
-- Day of week
-- Holiday indicator
-- Temperature
-- Rainfall
-- Snowfall
-- Cloud coverage
-- Weather condition
-
-The API automatically recreates the feature engineering required by the trained model.
-
-A local deployment self-test produced:
-
-| Test Input | Result |
-|---|---|
-| Tuesday 10:00, clear weather | Predicted traffic volume = 4,422.83 |
-
-The API returned a successful model prediction, demonstrating how the trained model could be exposed as a prediction service.
-
----
-
-## 6.4 Model Monitoring
-
-A monitoring simulation was implemented in:
-
-`monitoring.py`
-
-To avoid overlap between training data and the simulated monitoring windows, the chronologically ordered observations were divided into:
-
-- Earliest 70%: monitoring-model training window (**33,730 records**)
-- Next 10%: unseen baseline/reference window (**4,819 records**)
-- Latest 20%: unseen simulated current/live window (**9,638 records**)
-
-A fresh clone of the Random Forest Regressor configuration was trained only on the earliest 70%. The baseline and current monitoring windows therefore remained out-of-sample for this monitoring simulation.
-
-Two monitoring approaches were used.
-
-### Prediction Error Monitoring
-
-The unseen baseline-window MAE was **263.16**.
-
-An alert threshold was set at 125% of baseline MAE: **328.95**.
-
-The simulated current-window MAE was **321.24**, a **22.07% increase** relative to baseline. Because 321.24 remained below 328.95, the prediction-error drift check did **not** trigger an alert.
-
-### Feature Distribution Monitoring
-
-Feature distribution drift was evaluated using standardised mean difference, with an alert threshold of **SMD > 0.50**.
+Feature distribution drift was also checked using standardised mean difference, with an alert threshold of SMD > 0.50.
 
 | Feature | SMD | Drift |
 |---|---:|---|
 | Hour | 0.004 | No |
-| Temperature | 1.445 | **Yes** |
+| Temperature | 1.445 | Yes |
 | Rainfall | 0.000 | No |
 | Snowfall | 0.000 | No |
 | Cloud coverage | 0.022 | No |
 | Weather severity | 0.027 | No |
 
-Temperature exceeded the drift threshold substantially. Because the monitoring windows are chronological, this shift may reflect seasonal or temporal changes in temperature distribution and should be investigated rather than treated automatically as model failure.
+Temperature clearly exceeded the drift threshold. Because the windows are chronological, this may partly reflect seasonal or temporal changes rather than an immediate model failure, but it is still a condition that should be investigated.
 
----
-
-## 6.5 Alerting
-
-The monitoring system generates one of two statuses:
-
-- PASS / Normal
-- ALERT / Requires investigation
-
-For the current monitoring simulation:
+The monitoring system therefore returned:
 
 **SYSTEM STATUS: ALERT / Requires investigation**
 
-The alert was triggered by temperature distribution drift, while prediction-error drift remained below its configured threshold.
+The alert was caused by feature-distribution drift rather than prediction-error drift. In a production system, this type of alert would trigger checks of incoming data, seasonal changes and model performance before deciding whether retraining, recalibration or rollback was necessary.
 
-In production, an ALERT would trigger investigation of incoming-data quality, seasonal/contextual changes, model performance and whether recalibration, retraining or rollback is appropriate. An alert is an investigation signal rather than proof that the model has failed.
+## Task 7 – Responsible and Sustainable AI
 
----
+A more detailed discussion is provided in `bias_fairness_report.md`.
 
-# Task 7 – Responsible and Sustainable AI
+The main risks identified in this project are incomplete coverage for some years, use of data from only one road corridor, uneven representation of weather conditions, possible differences in model performance across periods, proxy-label bias and future distribution shift.
 
-A separate detailed report is provided in:
+The proxy accident-risk classifier is a particularly important limitation. It should not be used as if it predicts actual accidents, since no verified accident outcome was available.
 
-`bias_fairness_report.md`
+Human oversight would therefore be required before any model output was used for safety-related or operational decisions. The system should support decision-making rather than automatically control traffic operations.
 
-The principal risks identified include:
+There is also a sustainability consideration in model selection. The Random Forest Regressor achieved better predictive performance than the neural network while using a simpler modelling and deployment workflow. More computationally intensive methods should therefore be adopted only when they provide a measurable improvement in operational value.
 
-- Incomplete historical coverage for some years
-- Single-corridor geographic limitation
-- Unequal representation of weather conditions
-- Temporal performance differences
-- Proxy-label bias
-- Potential distribution shift
-- Risk of misinterpreting the proxy classifier as an actual accident model
+## Overall Findings
 
-Human oversight should be retained for any operational or safety-related decision.
+Several patterns were consistent across the different parts of the project.
 
-The model should be treated as decision support rather than an autonomous traffic-control mechanism.
+Time-related features were repeatedly important. They appeared in the exploratory analysis, clustering results, recommendation system and SHAP explanations.
 
-The Random Forest Regressor also demonstrates an important sustainability consideration. It achieved better prediction accuracy than the neural network while using a simpler modelling and deployment workflow.
+Among the traffic-volume models, the results were:
 
-This suggests that higher computational complexity should only be adopted when it provides measurable operational value.
+- Random Forest Regressor: R² = **0.9454**
+- Neural Network: R² = **0.9250**
+- Linear Regression: R² = **0.7260**
 
----
+This supports the view that nonlinear relationships are important in traffic-demand modelling.
 
-# 8. End-to-End Solution Integration
+The unsupervised analysis also produced useful operational patterns. K-means selected k = 8 from the tested k = 2–8 range, while the association rules showed a strong relationship between overnight periods and low congestion.
 
-The final Part 3 solution integrates:
+The recommendation component then translated these historical patterns into practical travel-time suggestions.
 
-| Layer | Implementation |
-|---|---|
-| Data preparation | `prepare_ml_data.py` |
-| Supervised ML | `supervised_models.py` |
-| Unsupervised ML | `unsupervised_models.py` |
-| Deep learning | `deep_learning_explainability.py` |
-| Explainability | SHAP |
-| Advanced AI | MLflow |
-| Recommendation | `recommendation_system.py` |
-| Deployment | `deployment_api.py` |
-| Monitoring | `monitoring.py` |
-| Responsible AI | `bias_fairness_report.md` |
+The MLOps work showed a different but equally important point: strong model accuracy is not enough by itself. The monitoring simulation raised an alert because temperature distribution changed substantially, even though prediction error had not yet crossed its threshold. This is why deployment, monitoring, alerting, explainability and governance need to be considered together.
 
-Together, the components demonstrate how traffic data can progress from analytics and reproducible data engineering into modelling, explainability, decision support, deployment simulation and monitored AI operations.
+## Conclusion
 
----
+Part 3 extends the earlier analytics and data-engineering work into an end-to-end intelligent mobility prototype. It combines supervised and unsupervised learning, neural-network modelling, SHAP explainability, MLflow experiment tracking, travel recommendations, FastAPI deployment and monitoring.
 
-# 9. Overall Findings
+The strongest traffic-volume model was the Random Forest Regressor, with an MAE of **268.67** and R² of **0.9454**.
 
-The project produced several consistent findings.
-
-Traffic demand is strongly time-dependent. Time-of-day and weekday/weekend features were repeatedly important across exploratory analysis, clustering, recommendation generation and SHAP explainability.
-
-The Random Forest models provided the strongest supervised-learning performance.
-
-For traffic-volume prediction:
-
-- Random Forest R² = 0.9454
-- Neural Network R² = 0.9250
-- Linear Regression R² = 0.7260
-
-This suggests that nonlinear relationships are important in traffic demand.
-
-K-means evaluation selected k = 8 from the tested k = 2–8 range using the highest silhouette score (0.4822), producing interpretable traffic-condition segments.
-
-Association-rule analysis also showed that overnight periods are strongly associated with low congestion.
-
-The travel recommendation system translates these historical patterns into practical timing recommendations.
-
-Finally, the MLOps components demonstrate that predictive performance alone is insufficient for operational AI. The chronological monitoring simulation detected substantial temperature distribution drift and correctly raised an investigation alert even though prediction-error drift remained below threshold. Model versioning, experiment tracking, deployment controls, monitoring, alerting, explainability and governance are all required to support a reliable intelligent mobility solution.
-
----
-
-# 10. Conclusion
-
-Part 3 successfully extends the earlier traffic analytics and Python pipeline into an integrated intelligent mobility prototype.
-
-The solution demonstrates:
-
-- Supervised classification and regression
-- Traffic-condition clustering
-- Association-rule mining
-- Neural-network demand prediction
-- SHAP explainability
-- MLflow experiment tracking
-- Travel-time recommendations
-- FastAPI deployment simulation
-- Model monitoring and alerting
-- Responsible and sustainable AI considerations
-
-The strongest traffic-volume model was the Random Forest Regressor with an MAE of 268.67 and R² of 0.9454.
-
-However, the project remains a demonstration rather than a production mobility system.
-
-Before real-world use, the models would require representative operational data, broader geographic coverage, verified safety outcomes, independent validation, formal governance, continuous monitoring and human oversight.
+The project is still a demonstration rather than a production mobility system. Real-world use would require broader and more representative data, verified safety outcomes, independent validation, stronger governance controls, continuous monitoring and human oversight.

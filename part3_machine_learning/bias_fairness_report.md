@@ -1,206 +1,114 @@
 # Bias, Fairness, Governance and Sustainability Report
 
-## 1. Purpose
+## Purpose and Scope
 
-This intelligent mobility solution uses the Metro Interstate Traffic Volume dataset to analyse traffic patterns, predict traffic demand, identify traffic-condition clusters, generate travel-time recommendations, and demonstrate an end-to-end machine learning and MLOps workflow.
+The intelligent mobility solution developed in this capstone uses the Metro Interstate Traffic Volume dataset to predict traffic demand, identify traffic patterns, generate travel-time recommendations and demonstrate how a machine-learning solution could be monitored after deployment.
 
-The solution does not use a real accident dataset. In accordance with the capstone instructions, a proxy accident-risk label was created to demonstrate a classification workflow. The proxy must therefore not be interpreted as an actual accident prediction.
+The dataset contains 48,187 cleaned observations after duplicate removal and data-quality treatment.
 
----
+One important limitation is that no real accident dataset was provided. A proxy accident-risk label was therefore created only to demonstrate the required classification workflow. The classifier should not be interpreted as predicting whether an actual accident will occur.
 
-## 2. Data Coverage and Sampling Limitations
+## Data and Coverage Limitations
 
-The traffic dataset contains 48,187 cleaned observations after duplicate removal and data-quality treatment.
+The historical dataset does not provide equal coverage across all years. Some years contain only part of the year, while others have much more complete coverage. This means that annual traffic totals cannot always be compared directly without considering how many months or observations are available.
 
-The historical data does not provide equally complete coverage for every year. In the earlier data analysis, some years were found to contain only partial-year observations, while other years had substantially more complete coverage. Therefore, raw yearly totals should not be interpreted as directly comparable measures of annual traffic growth without considering the available observation period.
+The data also comes from a single traffic corridor. Traffic behaviour on this road may be different from other roads or cities because of differences in road design, surrounding land use, commuting behaviour, local events, construction and transport policy.
 
-The dataset also represents traffic on a single transport corridor. As a result:
+For the same reason, the travel recommendation component recommends **when to travel** rather than suggesting alternative routes. The dataset does not contain a wider road network that would support route selection.
 
-- The findings may not generalise to other roads, cities or transport networks.
-- Road geometry, local events, construction, incidents and nearby land-use patterns may differ elsewhere.
-- Historical traffic behaviour may not represent future mobility patterns after major infrastructure, policy or behavioural changes.
-- Certain weather conditions occur less frequently than common conditions, so model performance may be less reliable for rare weather scenarios.
+Weather conditions are also unevenly represented. Common conditions appear much more frequently than unusual conditions such as severe storms, snow or squalls. A model may therefore perform well overall while being less reliable during rare operating conditions.
 
-The recommendation component therefore focuses on travel timing rather than route selection because no alternative route network data is available.
+These limitations mean that the models should not be transferred directly to another location or used for long-term forecasting without further validation.
 
----
+## Proxy Accident-Risk Label
 
-## 3. Proxy Accident-Risk Label
+The proxy high-risk label was created using two conditions: traffic had to fall within the High or Severe congestion categories, and severe or low-visibility weather also had to be present.
 
-No real accident dataset was supplied for the capstone.
+This produced:
 
-A proxy high-risk label was therefore constructed using two conditions:
+| Proxy Class | Records |
+|---|---:|
+| Non-high-risk | 39,834 |
+| High-risk | 8,353 |
 
-1. Traffic congestion must fall into the High or Severe quartile-based congestion categories.
-2. Severe or low-visibility weather conditions must also be present.
+This label is useful for demonstrating classification, but it is not equivalent to an observed accident outcome.
 
-The proxy label produced:
+High congestion and difficult weather can occur without an accident, while accidents can also occur in light traffic and clear weather. The label therefore reflects the assumptions used to construct the capstone proxy rather than independently observed road-safety events.
 
-- 39,834 non-high-risk records
-- 8,353 high-risk records
+There is also some conceptual overlap between the proxy definition and the classifier inputs because weather-related variables contribute to both. High classification performance may therefore partly reflect how well the model reproduces the engineered rule.
 
-This label is useful for demonstrating classification techniques, but it introduces important limitations.
+For real accident-risk modelling, verified accident records would be required, including accident time, location and severity, together with relevant road, vehicle and environmental information.
 
-High congestion combined with poor weather does not necessarily mean that an accident occurred. Likewise, accidents can occur during low traffic or clear weather.
+## Bias and Uneven Model Performance
 
-The classification models therefore estimate the engineered proxy condition only. They must not be described or deployed as models that predict actual road accidents.
+Several forms of bias may affect the results.
 
-A production accident-risk system would require verified accident records, including accident time, location, severity and potentially road, vehicle and behavioural factors.
+Traffic demand changes substantially by hour and between weekdays and weekends. SHAP analysis also showed that time-related variables were among the strongest contributors to traffic-volume predictions. Model performance should therefore be checked separately across peak, off-peak, weekday and weekend periods instead of relying only on one overall accuracy figure.
 
----
+Weather representation is another concern. Rare weather conditions have fewer training examples, so errors may be higher during unusual conditions even when average model performance is strong.
 
-## 4. Bias and Fairness Risks
+Geographic bias is also present because the data represents only one corridor. A model that performs well here may not behave in the same way on another road with different traffic patterns.
 
-### 4.1 Temporal Bias
+Other situations that may produce higher error include holidays, extreme congestion, unusual temperatures and future traffic conditions that differ from the historical training data.
 
-Traffic varies substantially by hour and day of week. The SHAP analysis showed that time-related variables were among the most influential features, especially:
+For these reasons, fairness in this project is mainly concerned with whether model quality is reasonably consistent across different **operating conditions and time periods**, rather than demographic groups, since the dataset does not contain personal demographic information.
 
-- hour_cos
-- hour
-- hour_sin
-- day_of_week
-- is_weekend
+## Monitoring and Operational Risk
 
-This means model quality may differ across peak, off-peak, weekday and weekend periods.
+The monitoring simulation was designed chronologically so that the monitoring model was not evaluated on data it had already seen during training.
 
-Performance should therefore be monitored separately across major time windows instead of relying only on aggregate accuracy.
+The earliest 70% of the observations were used for training, the next 10% formed the baseline period, and the most recent 20% represented simulated current traffic.
 
-### 4.2 Weather Representation Bias
+The baseline MAE was **263.16**. A prediction-error alert threshold was set at **328.95**, equal to 125% of the baseline MAE. The current MAE increased to **321.24**, which was a **22.07% increase**, but it remained below the error threshold.
 
-Common weather conditions have more observations than rare conditions.
+Feature-distribution monitoring produced a different result. Temperature had a standardised mean difference of **1.445**, well above the drift threshold of 0.50.
 
-The model may therefore learn common conditions more reliably than unusual events such as severe storms, snow or squalls.
+The final monitoring status was therefore:
 
-Performance for rare weather conditions should be reviewed separately before operational use.
+**ALERT / Requires investigation**
 
-### 4.3 Proxy-Label Bias
+The alert does not automatically mean the model has failed. Because the comparison is chronological, the temperature shift may partly reflect seasonal changes. It does, however, show why incoming data needs to be monitored rather than assuming that historical model performance will remain stable.
 
-The high-risk target is directly constructed from congestion and weather rules.
+A production system should investigate an alert before deciding whether recalibration, retraining or rollback is required.
 
-This means the label reflects assumptions selected for the capstone rather than independently observed accident outcomes.
+## Governance and Transparency
 
-A model trained on this label may reproduce those assumptions very accurately without learning true accident risk.
+The models in this project should be treated as decision-support tools rather than autonomous traffic-control systems.
 
-Therefore, high classification performance must not be interpreted as evidence that the model accurately predicts real-world accidents.
+Before any real-world deployment, there should be clear ownership of approved data sources, data-quality checks and feature-engineering logic. Each model version should also be traceable to its training data, source code and evaluation results.
 
-### 4.4 Geographic Bias
+Independent validation would be required before a model was promoted into operational use. Performance should be reviewed not only overall, but also across different traffic periods, weather conditions and congestion levels.
 
-The dataset represents one corridor and does not contain a representative sample of multiple road environments.
+Human oversight is particularly important for safety-related decisions. An operator should be able to review recommendations and monitoring alerts rather than allowing the model to make an automatic safety-critical decision.
 
-Models should not be transferred directly to other locations without validation using local data.
+MLflow was used in this project to support experiment tracking and model-version comparison. SHAP was also used to provide greater transparency into the traffic-volume model. The explainability results showed that temporal features were major contributors to predictions, but these explanations describe model behaviour rather than proving causal relationships.
 
----
+## Sustainability
 
-## 5. Uneven Distribution of Errors
+Model selection also has a resource and sustainability dimension.
 
-Prediction errors may not be distributed equally across all operating conditions.
+The Random Forest Regressor achieved:
 
-Possible higher-error situations include:
-
-- Rare weather conditions
-- Major holidays
-- Extreme congestion
-- Unusual temperature or precipitation conditions
-- Time periods with limited historical observations
-- Future traffic conditions that differ from the historical training distribution
-
-The monitoring component therefore evaluates both prediction error and feature-distribution drift.
-
-In the current monitoring simulation:
-
-- Baseline Random Forest MAE: 268.67
-- Current monitored MAE: 132.01
-- Alert threshold: 335.84
-- No monitored feature exceeded the feature-drift threshold
-- Overall system status: PASS / Normal
-
-A production system should additionally calculate performance by time period, weather condition and congestion category.
-
----
-
-## 6. Governance Requirements
-
-The model should not automatically control traffic operations or make safety-critical decisions without human oversight.
-
-Before real-world deployment, the following governance controls should be established:
-
-1. **Data governance**
-   - Define approved data sources.
-   - Monitor data quality and lineage.
-   - Document transformation and feature-engineering logic.
-
-2. **Model validation**
-   - Perform independent testing before deployment.
-   - Validate performance across different traffic and weather conditions.
-   - Define minimum acceptable performance thresholds.
-
-3. **Model versioning**
-   - Record each model version and its evaluation metrics.
-   - Maintain traceability between training data, code and deployed models.
-
-4. **Human oversight**
-   - Require human review for decisions that could affect public safety or traffic operations.
-   - Treat recommendations as decision support rather than mandatory instructions.
-
-5. **Monitoring and alerting**
-   - Monitor prediction error and feature drift.
-   - Trigger investigation when predefined thresholds are exceeded.
-   - Suspend or retrain models if performance becomes unreliable.
-
-6. **Change management**
-   - Revalidate models after material changes to data, road infrastructure or modelling logic.
-
-MLflow was used in this project to support experiment tracking, model version comparison and reproducibility.
-
----
-
-## 7. Explainability and Transparency
-
-SHAP was used to explain the Random Forest traffic-volume model.
-
-The analysis indicated that time-related features were dominant drivers of predictions. This is consistent with the observed strong daily traffic cycle.
-
-Explainability is important because mobility-system operators should understand the main factors influencing model predictions before relying on them.
-
-However, SHAP explains relationships learned by the model. It does not establish that the identified features cause traffic changes.
-
----
-
-## 8. Sustainability
-
-The project considered computational efficiency when selecting models and techniques.
-
-The Random Forest Regressor achieved strong predictive performance with:
-
-- MAE: 268.67
-- R²: 0.9454
+- MAE: **268.67**
+- R²: **0.9454**
 
 The neural network achieved:
 
-- MAE: 355.93
-- R²: 0.9250
+- MAE: **355.93**
+- R²: **0.9250**
 
-Although the neural network provided a valid deep-learning demonstration, the Random Forest achieved better predictive performance for this dataset while requiring a simpler deployment workflow.
+Although the neural network provided the required deep-learning implementation, it did not improve predictive performance over the Random Forest for this dataset.
 
-For a production solution, model complexity should therefore be justified by measurable value.
+Using a more computationally complex model is therefore not automatically better. Where a simpler model provides equal or better performance, it may also reduce training effort, deployment complexity and computing requirements.
 
-Sustainability practices should include:
+For a production system, unnecessary retraining should be avoided. Monitoring can help determine when model performance or data distributions have changed enough to justify retraining rather than retraining on a fixed schedule without evidence of need.
 
-- Avoiding unnecessary model retraining.
-- Using smaller models when performance is comparable.
-- Monitoring models to retrain only when meaningful drift occurs.
-- Reusing validated models and feature pipelines.
-- Selecting computing resources appropriate to the problem size.
-- Tracking the operational benefit generated relative to computational cost.
+## Conclusion
 
----
+The intelligent mobility solution demonstrates useful applications of machine learning for traffic-demand prediction, traffic-pattern analysis and travel-time recommendations, but its results need to be interpreted within the limitations of the available data.
 
-## 9. Conclusion
+The most important risks are incomplete historical coverage, single-corridor data, uneven representation of operating conditions and the use of an engineered accident-risk proxy rather than real accident outcomes.
 
-The project demonstrates that machine learning can support traffic-demand prediction, traffic-pattern analysis and travel-time recommendations.
+The monitoring simulation also showed that a model can require investigation even before prediction error crosses its alert threshold, because the characteristics of incoming data may change.
 
-However, the system has important limitations arising from single-corridor data, uneven historical coverage and the use of a proxy accident-risk label.
-
-The classification model should therefore be regarded as a demonstration of a machine learning workflow rather than a real accident-prediction system.
-
-Real-world use would require representative operational data, verified safety outcomes, independent validation, ongoing monitoring, human oversight and formal governance controls.
+Real-world use would therefore require broader and more representative data, verified safety outcomes, independent validation, ongoing monitoring, clear governance and human oversight. Model complexity should also be justified by measurable operational benefit rather than adopted simply because a more advanced technique is available.

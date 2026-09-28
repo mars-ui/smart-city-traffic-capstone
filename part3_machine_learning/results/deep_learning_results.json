@@ -1,0 +1,50 @@
+{
+    "neural_network": {
+        "mae": 355.9267883300781,
+        "r2": 0.9249823689460754,
+        "epochs_completed": 25
+    },
+    "explainability_method": "SHAP TreeExplainer applied to the Random Forest regression model trained on the same traffic-volume prediction task.",
+    "top_shap_features": [
+        {
+            "feature": "hour_cos",
+            "mean_abs_shap": 1424.4329973282433
+        },
+        {
+            "feature": "hour",
+            "mean_abs_shap": 422.59099102870044
+        },
+        {
+            "feature": "hour_sin",
+            "mean_abs_shap": 195.06078581059256
+        },
+        {
+            "feature": "day_of_week",
+            "mean_abs_shap": 149.9361739096107
+        },
+        {
+            "feature": "is_weekend",
+            "mean_abs_shap": 142.27399214450168
+        },
+        {
+            "feature": "day_sin",
+            "mean_abs_shap": 133.4463702603455
+        },
+        {
+            "feature": "temp",
+            "mean_abs_shap": 114.43138508427305
+        },
+        {
+            "feature": "day_cos",
+            "mean_abs_shap": 60.53619231587084
+        },
+        {
+            "feature": "clouds_all",
+            "mean_abs_shap": 29.142268384447643
+        },
+        {
+            "feature": "weather_severity",
+            "mean_abs_shap": 26.2122563006573
+        }
+    ]
+}

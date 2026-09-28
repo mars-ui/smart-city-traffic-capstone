@@ -35,7 +35,7 @@ logger.propagate = False
 
 if not logger.handlers:
     formatter = logging.Formatter(
-        "%(asctime)s - %(levelname)s - %(message)s"
+        "%(asctime)s - %(levelname)s - %(name)s - %(message)s"
     )
 
     file_handler = logging.FileHandler(

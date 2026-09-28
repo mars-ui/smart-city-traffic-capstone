@@ -1,8 +1,12 @@
-import pandas as pd
-import matplotlib.pyplot as plt
 import logging
 import sys
 from pathlib import Path
+
+import matplotlib.pyplot as plt
+import pandas as pd
+
+
+logger = logging.getLogger(__name__)
 
 
 # -------------------------------------------------
@@ -21,37 +25,36 @@ figures_dir = (
     / "figures"
 )
 
-log_file = (
-    script_dir
-    / "pipeline.log"
-)
 
+def configure_logging():
+    """Configure console and file logging for this entry-point script."""
 
-# -------------------------------------------------
-# Logging configuration
-# -------------------------------------------------
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-logger.propagate = False
-
-if not logger.handlers:
-    formatter = logging.Formatter(
-        "%(asctime)s - %(levelname)s - %(message)s"
+    log_file = (
+        script_dir
+        / "pipeline.log"
     )
 
-    file_handler = logging.FileHandler(
-        log_file,
-        encoding="utf-8"
-    )
-    file_handler.setLevel(logging.DEBUG)
-    file_handler.setFormatter(formatter)
+    logger.setLevel(logging.DEBUG)
+    logger.propagate = False
 
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.INFO)
-    console_handler.setFormatter(formatter)
+    if not logger.handlers:
+        formatter = logging.Formatter(
+            "%(asctime)s - %(levelname)s - %(name)s - %(message)s"
+        )
 
-    logger.addHandler(file_handler)
-    logger.addHandler(console_handler)
+        file_handler = logging.FileHandler(
+            log_file,
+            encoding="utf-8",
+        )
+        file_handler.setLevel(logging.DEBUG)
+        file_handler.setFormatter(formatter)
+
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.INFO)
+        console_handler.setFormatter(formatter)
+
+        logger.addHandler(file_handler)
+        logger.addHandler(console_handler)
 
 
 def create_visualizations(df):
@@ -59,7 +62,7 @@ def create_visualizations(df):
 
     figures_dir.mkdir(
         parents=True,
-        exist_ok=True
+        exist_ok=True,
     )
 
     interpretations = []
@@ -73,20 +76,24 @@ def create_visualizations(df):
         .sort_index()
     )
 
-    plt.figure(figsize=(9, 5))
+    plt.figure(
+        figsize=(9, 5)
+    )
 
     plt.plot(
         hourly_traffic.index,
         hourly_traffic.values,
-        marker="o"
+        marker="o",
     )
 
     plt.title(
         "Average Traffic Volume by Hour"
     )
+
     plt.xlabel(
         "Hour of Day"
     )
+
     plt.ylabel(
         "Average Traffic Volume"
     )
@@ -108,21 +115,31 @@ def create_visualizations(df):
 
     plt.savefig(
         hourly_path,
-        dpi=300
+        dpi=300,
     )
 
     plt.close()
 
     logger.info(
         "Figure saved successfully: %s",
-        hourly_path.relative_to(script_dir)
+        hourly_path.relative_to(script_dir),
     )
 
-    peak_hour = hourly_traffic.idxmax()
-    peak_volume = hourly_traffic.max()
+    peak_hour = (
+        hourly_traffic.idxmax()
+    )
 
-    low_hour = hourly_traffic.idxmin()
-    low_volume = hourly_traffic.min()
+    peak_volume = (
+        hourly_traffic.max()
+    )
+
+    low_hour = (
+        hourly_traffic.idxmin()
+    )
+
+    low_volume = (
+        hourly_traffic.min()
+    )
 
     interpretations.append(
         f"1. Traffic by Hour: Average traffic is highest around "
@@ -139,39 +156,47 @@ def create_visualizations(df):
         .mean()
     )
 
-    weekday_avg = weekend_summary.get(
-        0,
-        0
+    weekday_avg = (
+        weekend_summary.get(
+            0,
+            0,
+        )
     )
 
-    weekend_avg = weekend_summary.get(
-        1,
-        0
+    weekend_avg = (
+        weekend_summary.get(
+            1,
+            0,
+        )
     )
 
     labels = [
         "Weekday",
-        "Weekend"
+        "Weekend",
     ]
 
     values = [
         weekday_avg,
-        weekend_avg
+        weekend_avg,
     ]
 
-    plt.figure(figsize=(7, 5))
+    plt.figure(
+        figsize=(7, 5)
+    )
 
     plt.bar(
         labels,
-        values
+        values,
     )
 
     plt.title(
         "Average Traffic Volume: Weekday vs Weekend"
     )
+
     plt.xlabel(
         "Day Type"
     )
+
     plt.ylabel(
         "Average Traffic Volume"
     )
@@ -185,14 +210,14 @@ def create_visualizations(df):
 
     plt.savefig(
         weekend_path,
-        dpi=300
+        dpi=300,
     )
 
     plt.close()
 
     logger.info(
         "Figure saved successfully: %s",
-        weekend_path.relative_to(script_dir)
+        weekend_path.relative_to(script_dir),
     )
 
     if weekday_avg > weekend_avg:
@@ -226,21 +251,25 @@ def create_visualizations(df):
     # =================================================
     # 3. Temperature versus traffic volume
     # =================================================
-    plt.figure(figsize=(9, 5))
+    plt.figure(
+        figsize=(9, 5)
+    )
 
     plt.scatter(
         df["temp"],
         df["traffic_volume"],
         alpha=0.15,
-        s=10
+        s=10,
     )
 
     plt.title(
         "Temperature vs Traffic Volume"
     )
+
     plt.xlabel(
         "Temperature (Kelvin)"
     )
+
     plt.ylabel(
         "Traffic Volume"
     )
@@ -254,18 +283,21 @@ def create_visualizations(df):
 
     plt.savefig(
         temp_path,
-        dpi=300
+        dpi=300,
     )
 
     plt.close()
 
     logger.info(
         "Figure saved successfully: %s",
-        temp_path.relative_to(script_dir)
+        temp_path.relative_to(script_dir),
     )
 
-    correlation = df["temp"].corr(
-        df["traffic_volume"]
+    correlation = (
+        df["temp"]
+        .corr(
+            df["traffic_volume"]
+        )
     )
 
     interpretations.append(
@@ -286,7 +318,7 @@ def create_visualizations(df):
     with open(
         interpretation_file,
         "w",
-        encoding="utf-8"
+        encoding="utf-8",
     ) as file:
         for interpretation in interpretations:
             file.write(
@@ -296,12 +328,14 @@ def create_visualizations(df):
 
     logger.info(
         "Visualisation interpretations saved to: %s",
-        interpretation_file.relative_to(script_dir)
+        interpretation_file.relative_to(script_dir),
     )
 
 
 def main():
     """Run the visualisation workflow."""
+
+    configure_logging()
 
     try:
         df = pd.read_csv(
@@ -312,7 +346,7 @@ def main():
             "Feature-engineered dataset loaded for visualisation: "
             "%s rows, %s columns",
             df.shape[0],
-            df.shape[1]
+            df.shape[1],
         )
 
         create_visualizations(
@@ -328,7 +362,7 @@ def main():
     except Exception:
         logger.error(
             "Visualisation process failed",
-            exc_info=True
+            exc_info=True,
         )
 
         return 1

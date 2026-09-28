@@ -40,3 +40,37 @@
 2026-09-25 21:23:33,473 - INFO - Dataset shape after feature engineering: 48187 rows, 29 columns
 2026-09-25 21:23:34,207 - INFO - Feature-engineered dataset saved to: output\feature_engineered_traffic.csv
 2026-09-25 21:23:34,208 - INFO - Feature engineering completed successfully
+2026-09-28 13:10:32,677 - INFO - __main__ - Cleaned dataset loaded for feature engineering
+2026-09-28 13:10:32,682 - INFO - __main__ - Dataset shape before feature engineering: 48187 rows, 9 columns
+2026-09-28 13:10:32,792 - INFO - __main__ - Created hour, day_of_week and is_weekend features
+2026-09-28 13:10:32,801 - INFO - __main__ - Created cyclical hour_sin and hour_cos features
+2026-09-28 13:10:32,819 - INFO - __main__ - Created adverse_weather indicator
+2026-09-28 13:10:32,849 - INFO - __main__ - Encoded weather_main using one-hot encoding
+2026-09-28 13:10:32,867 - INFO - __main__ - Scaled temp, rain_1h and clouds_all
+2026-09-28 13:10:32,878 - DEBUG - __main__ - Congestion thresholds calculated: 33rd percentile = 2157.00, 66th percentile = 4546.00
+2026-09-28 13:10:32,903 - INFO - __main__ - Created data-driven congestion_category
+2026-09-28 13:10:32,904 - INFO - __main__ - Dataset shape after feature engineering: 48187 rows, 29 columns
+2026-09-28 13:10:34,173 - INFO - __main__ - Feature-engineered dataset saved to: output\feature_engineered_traffic.csv
+2026-09-28 13:10:34,173 - INFO - __main__ - Feature engineering completed successfully
+2026-09-28 13:13:59,958 - INFO - Feature-engineered dataset loaded for visualisation: 48187 rows, 29 columns
+2026-09-28 13:14:01,986 - INFO - Figure saved successfully: figures\traffic_by_hour.png
+2026-09-28 13:14:02,670 - INFO - Figure saved successfully: figures\weekday_vs_weekend.png
+2026-09-28 13:14:04,442 - INFO - Figure saved successfully: figures\temperature_vs_traffic.png
+2026-09-28 13:14:04,447 - INFO - Visualisation interpretations saved to: figures\visualization_interpretations.txt
+2026-09-28 13:14:04,448 - INFO - All visualisations completed successfully
+2026-09-28 13:16:14,514 - INFO - __main__ - Feature-engineered dataset loaded for visualisation: 48187 rows, 29 columns
+2026-09-28 13:16:15,614 - INFO - __main__ - Figure saved successfully: figures\traffic_by_hour.png
+2026-09-28 13:16:16,146 - INFO - __main__ - Figure saved successfully: figures\weekday_vs_weekend.png
+2026-09-28 13:16:17,537 - INFO - __main__ - Figure saved successfully: figures\temperature_vs_traffic.png
+2026-09-28 13:16:17,540 - INFO - __main__ - Visualisation interpretations saved to: figures\visualization_interpretations.txt
+2026-09-28 13:16:17,541 - INFO - __main__ - All visualisations completed successfully
+2026-09-28 13:18:08,712 - INFO - __main__ - Feature-engineered dataset loaded: 48187 rows, 29 columns
+2026-09-28 13:18:08,713 - INFO - __main__ - Command invoked: compare | no additional arguments
+2026-09-28 13:19:43,528 - INFO - __main__ - Feature-engineered dataset loaded: 48187 rows, 29 columns
+2026-09-28 13:19:43,533 - INFO - __main__ - Command invoked: date | date=2017-01-15
+2026-09-28 13:20:59,061 - INFO - __main__ - Feature-engineered dataset loaded: 48187 rows, 29 columns
+2026-09-28 13:20:59,062 - INFO - __main__ - Command invoked: high | threshold=5500.0
+2026-09-28 13:22:07,749 - INFO - __main__ - Feature-engineered dataset loaded: 48187 rows, 29 columns
+2026-09-28 13:22:07,751 - ERROR - __main__ - Invalid date '2017-99-99'. Expected format: YYYY-MM-DD
+2026-09-28 13:23:19,301 - INFO - __main__ - Feature-engineered dataset loaded: 48187 rows, 29 columns
+2026-09-28 13:23:19,302 - ERROR - __main__ - Invalid traffic threshold: -1.0

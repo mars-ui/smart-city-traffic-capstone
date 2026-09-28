@@ -1,31 +1,40 @@
-import pandas as pd
 import argparse
 import logging
 import sys
 from pathlib import Path
 
+import pandas as pd
+
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-logger.propagate = False
 
-log_file = Path(__file__).resolve().parent / "pipeline.log"
 
-if not logger.handlers:
-    formatter = logging.Formatter(
-        "%(asctime)s - %(levelname)s - %(message)s"
-    )
+def configure_logging():
+    """Configure console and file logging for this entry-point script."""
 
-    file_handler = logging.FileHandler(log_file)
-    file_handler.setLevel(logging.DEBUG)
-    file_handler.setFormatter(formatter)
+    log_file = Path(__file__).resolve().parent / "pipeline.log"
 
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.INFO)
-    console_handler.setFormatter(formatter)
+    logger.setLevel(logging.DEBUG)
+    logger.propagate = False
 
-    logger.addHandler(file_handler)
-    logger.addHandler(console_handler)
+    if not logger.handlers:
+        formatter = logging.Formatter(
+            "%(asctime)s - %(levelname)s - %(name)s - %(message)s"
+        )
+
+        file_handler = logging.FileHandler(
+            log_file,
+            encoding="utf-8",
+        )
+        file_handler.setLevel(logging.DEBUG)
+        file_handler.setFormatter(formatter)
+
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.INFO)
+        console_handler.setFormatter(formatter)
+
+        logger.addHandler(file_handler)
+        logger.addHandler(console_handler)
 
 
 def load_processed_data():
@@ -40,6 +49,12 @@ def load_processed_data():
     df = pd.read_csv(file_path)
     df["date_time"] = pd.to_datetime(df["date_time"])
 
+    logger.info(
+        "Feature-engineered dataset loaded: %s rows, %s columns",
+        df.shape[0],
+        df.shape[1],
+    )
+
     return df
 
 
@@ -50,13 +65,13 @@ def query_date(df, date_text):
         selected_date = pd.to_datetime(
             date_text,
             format="%Y-%m-%d",
-            errors="raise"
+            errors="raise",
         ).date()
 
     except ValueError:
         logger.error(
             "Invalid date '%s'. Expected format: YYYY-MM-DD",
-            date_text
+            date_text,
         )
 
         print(
@@ -67,7 +82,7 @@ def query_date(df, date_text):
 
     logger.info(
         "Command invoked: date | date=%s",
-        date_text
+        date_text,
     )
 
     result = df[
@@ -75,11 +90,23 @@ def query_date(df, date_text):
     ]
 
     if result.empty:
-        print(f"No traffic records found for {date_text}.")
+        logger.warning(
+            "No traffic records found for date=%s",
+            date_text,
+        )
+
+        print(
+            f"No traffic records found for {date_text}."
+        )
         return
 
-    print(f"\nTraffic summary for {date_text}")
-    print("-" * 45)
+    print(
+        f"\nTraffic summary for {date_text}"
+    )
+
+    print(
+        "-" * 45
+    )
 
     print(
         f"Number of observations: {len(result)}"
@@ -103,10 +130,13 @@ def query_date(df, date_text):
     display_columns = [
         "date_time",
         "traffic_volume",
-        "weather_description"
+        "weather_description",
     ]
 
-    print("\nHourly records:")
+    print(
+        "\nHourly records:"
+    )
+
     print(
         result[display_columns]
         .sort_values("date_time")
@@ -119,7 +149,7 @@ def high_traffic(df, threshold):
 
     logger.info(
         "Command invoked: high | threshold=%s",
-        threshold
+        threshold,
     )
 
     result = df[
@@ -129,7 +159,10 @@ def high_traffic(df, threshold):
     print(
         f"\nTraffic periods above {threshold:.0f}"
     )
-    print("-" * 45)
+
+    print(
+        "-" * 45
+    )
 
     print(
         f"Number of high-traffic observations: "
@@ -137,13 +170,20 @@ def high_traffic(df, threshold):
     )
 
     if result.empty:
-        print("No observations exceeded the threshold.")
+        logger.warning(
+            "No observations exceeded threshold=%s",
+            threshold,
+        )
+
+        print(
+            "No observations exceeded the threshold."
+        )
         return
 
     top_periods = (
         result.sort_values(
             "traffic_volume",
-            ascending=False
+            ascending=False,
         )
         .head(10)
     )
@@ -151,10 +191,12 @@ def high_traffic(df, threshold):
     display_columns = [
         "date_time",
         "traffic_volume",
-        "weather_description"
+        "weather_description",
     ]
 
-    print("\nTop 10 highest traffic observations:")
+    print(
+        "\nTop 10 highest traffic observations:"
+    )
 
     print(
         top_periods[display_columns]
@@ -177,8 +219,13 @@ def compare_day_type(df):
     weekday = summary.loc[0]
     weekend = summary.loc[1]
 
-    print("\nWeekday vs Weekend Traffic")
-    print("-" * 45)
+    print(
+        "\nWeekday vs Weekend Traffic"
+    )
+
+    print(
+        "-" * 45
+    )
 
     print(
         f"Weekday average traffic: "
@@ -200,7 +247,10 @@ def compare_day_type(df):
         f"{weekend['median']:.0f}"
     )
 
-    difference = weekday["mean"] - weekend["mean"]
+    difference = (
+        weekday["mean"]
+        - weekend["mean"]
+    )
 
     print(
         f"Average difference "
@@ -210,6 +260,9 @@ def compare_day_type(df):
 
 
 def main():
+    """Run the mini traffic analytics application."""
+
+    configure_logging()
 
     parser = argparse.ArgumentParser(
         description="Mini Traffic Analytics Application"
@@ -217,38 +270,38 @@ def main():
 
     subparsers = parser.add_subparsers(
         dest="command",
-        required=True
+        required=True,
     )
 
     # Command 1: date
     date_parser = subparsers.add_parser(
         "date",
-        help="Query traffic for a specific date"
+        help="Query traffic for a specific date",
     )
 
     date_parser.add_argument(
         "--date",
         required=True,
-        help="Date in YYYY-MM-DD format"
+        help="Date in YYYY-MM-DD format",
     )
 
     # Command 2: high
     high_parser = subparsers.add_parser(
         "high",
-        help="Identify high-traffic periods"
+        help="Identify high-traffic periods",
     )
 
     high_parser.add_argument(
         "--threshold",
         type=float,
         default=5500,
-        help="Traffic-volume threshold (default: 5500)"
+        help="Traffic-volume threshold (default: 5500)",
     )
 
     # Command 3: compare
     subparsers.add_parser(
         "compare",
-        help="Compare weekday and weekend traffic"
+        help="Compare weekday and weekend traffic",
     )
 
     args = parser.parse_args()
@@ -259,15 +312,14 @@ def main():
         if args.command == "date":
             query_date(
                 df,
-                args.date
+                args.date,
             )
 
         elif args.command == "high":
-
             if args.threshold < 0:
                 logger.error(
                     "Invalid traffic threshold: %s",
-                    args.threshold
+                    args.threshold,
                 )
 
                 print(
@@ -278,18 +330,20 @@ def main():
 
             high_traffic(
                 df,
-                args.threshold
+                args.threshold,
             )
 
         elif args.command == "compare":
-            compare_day_type(df)
+            compare_day_type(
+                df
+            )
 
         return 0
 
     except Exception:
         logger.error(
             "Traffic application failed",
-            exc_info=True
+            exc_info=True,
         )
 
         print(
@@ -301,4 +355,6 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(
+        main()
+    )

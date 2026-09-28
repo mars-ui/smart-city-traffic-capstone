@@ -1,0 +1,16 @@
+antecedent,consequent,support,confidence,lift
+time_of_day=Overnight AND day_type=Weekend,congestion=Low,0.06441571378172536,0.8860976306023408,3.544316969024238
+time_of_day=Overnight AND weather_group=SevereWeather,congestion=Low,0.04324817896943159,0.8544485444854448,3.417723251690888
+time_of_day=Overnight AND weather_group=MildWeather,congestion=Low,0.11880797725527632,0.8518077667013837,3.407160359760901
+time_of_day=Overnight,congestion=Low,0.2163239047875983,0.8487908150802052,3.395092803707964
+time_of_day=Overnight AND weather_group=ReducedVisibility,congestion=Low,0.054267748562890405,0.837872476770266,3.3514203567800123
+time_of_day=Overnight AND day_type=Weekday,congestion=Low,0.15190819100587297,0.833902939166097,3.3355425358675785
+time_of_day=Midday AND day_type=Weekend,congestion=High,0.047274161080789426,0.8235719450469993,3.292306397542704
+time_of_day=Night AND weather_group=MildWeather,congestion=Medium,0.06323282213045012,0.8054454136928364,3.221180027356354
+time_of_day=Night AND day_type=Weekend,congestion=Medium,0.028264884719945215,0.8030660377358491,3.211664300803167
+time_of_day=Night,congestion=Medium,0.09861580924315687,0.7898936170212766,3.1589844570839287
+time_of_day=Night AND day_type=Weekday,congestion=Medium,0.07035092452321165,0.7847222222222222,3.1383027406608206
+time_of_day=Night AND weather_group=SevereWeather,congestion=Medium,0.019196048726835037,0.7845631891433418,3.13766672713505
+time_of_day=Night AND weather_group=ReducedVisibility,congestion=Medium,0.016186938385871708,0.7400379506641366,2.9595990313430787
+time_of_day=Midday AND day_type=Weekday,congestion=Severe,0.10334737584825783,0.7132626754511602,2.8553616799838046
+time_of_day=Morning AND day_type=Weekday,congestion=Severe,0.10843173470023035,0.5956452348381213,2.3845108358515037

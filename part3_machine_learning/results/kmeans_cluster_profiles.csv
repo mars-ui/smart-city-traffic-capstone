@@ -1,0 +1,5 @@
+cluster,records,avg_hour,avg_traffic,avg_weather_severity,weekend_share
+0,15331,14.87,4485.55,0.0,0.0
+1,8623,2.51,824.65,0.63,0.0
+2,13548,11.3,2558.8,0.57,1.0
+3,10685,13.71,4354.31,1.6,0.01

@@ -1,0 +1,45 @@
+{
+    "cluster_interpretations": {
+        "0": "Cluster 0: moderate traffic, mostly mild weather, weekday-oriented, with an average hour near 14.9.",
+        "1": "Cluster 1: low traffic, mixed weather, weekday-oriented, with an average hour near 2.5.",
+        "2": "Cluster 2: moderate traffic, mixed weather, weekend-oriented, with an average hour near 11.3.",
+        "3": "Cluster 3: moderate traffic, more severe weather, weekday-oriented, with an average hour near 13.7."
+    },
+    "top_association_rules": [
+        {
+            "antecedent": "time_of_day=Overnight AND day_type=Weekend",
+            "consequent": "congestion=Low",
+            "support": 0.06441571378172536,
+            "confidence": 0.8860976306023408,
+            "lift": 3.544316969024238
+        },
+        {
+            "antecedent": "time_of_day=Overnight AND weather_group=SevereWeather",
+            "consequent": "congestion=Low",
+            "support": 0.04324817896943159,
+            "confidence": 0.8544485444854448,
+            "lift": 3.417723251690888
+        },
+        {
+            "antecedent": "time_of_day=Overnight AND weather_group=MildWeather",
+            "consequent": "congestion=Low",
+            "support": 0.11880797725527632,
+            "confidence": 0.8518077667013837,
+            "lift": 3.407160359760901
+        },
+        {
+            "antecedent": "time_of_day=Overnight",
+            "consequent": "congestion=Low",
+            "support": 0.2163239047875983,
+            "confidence": 0.8487908150802052,
+            "lift": 3.395092803707964
+        },
+        {
+            "antecedent": "time_of_day=Overnight AND weather_group=ReducedVisibility",
+            "consequent": "congestion=Low",
+            "support": 0.054267748562890405,
+            "confidence": 0.837872476770266,
+            "lift": 3.3514203567800123
+        }
+    ]
+}

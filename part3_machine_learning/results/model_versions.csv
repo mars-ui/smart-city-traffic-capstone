@@ -1,0 +1,5 @@
+version,model,task,accuracy,precision,recall,f1,roc_auc,mae,r2
+classification_v1,Logistic Regression,classification,0.956733762191326,0.8094768015794669,0.9814482345900658,0.8872058425750609,0.9914684729205759,,
+classification_v2,Random Forest Classifier,classification,0.9798713426021997,0.935693215339233,0.9491322561340515,0.942364824717766,0.9964209034920153,,
+regression_v1,Linear Regression,regression,,,,,,813.4746028356138,0.7259608694002566
+regression_v2,Random Forest Regressor,regression,,,,,,268.6734037572835,0.9454365741873674

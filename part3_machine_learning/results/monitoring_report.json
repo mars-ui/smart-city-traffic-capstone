@@ -1,17 +1,36 @@
 {
     "monitoring_method": {
-        "reference_window": "Earlier 80% of chronologically ordered observations",
+        "chronological_split": "70% training / 10% baseline / 20% current",
+        "training_window": "Earliest 70% of chronologically ordered observations",
+        "baseline_window": "Next 10% of chronologically ordered observations",
         "current_window": "Latest 20% of chronologically ordered observations",
-        "prediction_error_rule": "Alert when monitored MAE exceeds 125% of baseline MAE",
-        "feature_drift_rule": "Alert when standardised mean difference exceeds 0.50"
+        "prediction_error_rule": "Alert when current MAE exceeds 125% of unseen baseline MAE",
+        "feature_drift_rule": "Alert when standardised mean difference exceeds 0.50",
+        "monitoring_model_note": "A fresh clone of the Random Forest configuration is trained only on the earliest 70% so baseline and current monitoring windows remain out-of-sample."
+    },
+    "window_sizes": {
+        "training_records": 33730,
+        "baseline_records": 4819,
+        "current_records": 9638
+    },
+    "window_dates": {
+        "training_start": "2012-10-02 09:00:00",
+        "training_end": "2017-05-17 18:00:00",
+        "baseline_start": "2017-05-17 19:00:00",
+        "baseline_end": "2017-11-01 19:00:00",
+        "current_start": "2017-11-01 20:00:00",
+        "current_end": "2018-09-30 23:00:00"
     },
     "prediction_error_monitoring": {
-        "baseline_mae": 268.6734037572835,
-        "current_mae": 132.00812631053665,
-        "alert_threshold_mae": 335.84175469660437,
+        "baseline_mae": 263.1595587708926,
+        "current_mae": 321.23775738808354,
+        "mae_percentage_change": 22.069575921334465,
+        "alert_threshold_mae": 328.94944846361574,
         "error_drift_alert": false
     },
-    "feature_distribution_alert": false,
-    "features_with_drift": [],
-    "overall_status": "PASS / Normal"
+    "feature_distribution_alert": true,
+    "features_with_drift": [
+        "temp"
+    ],
+    "overall_status": "ALERT / Requires investigation"
 }

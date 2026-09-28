@@ -1,0 +1,56 @@
+{
+    "classification": {
+        "Logistic Regression": {
+            "accuracy": 0.956733762191326,
+            "precision": 0.8094768015794669,
+            "recall": 0.9814482345900658,
+            "f1": 0.8872058425750609,
+            "roc_auc": 0.9914684729205759
+        },
+        "Random Forest Classifier": {
+            "accuracy": 0.9798713426021997,
+            "precision": 0.935693215339233,
+            "recall": 0.9491322561340515,
+            "f1": 0.942364824717766,
+            "roc_auc": 0.9964209034920153
+        }
+    },
+    "regression": {
+        "Linear Regression": {
+            "mae": 813.4746028356138,
+            "r2": 0.7259608694002566
+        },
+        "Random Forest Regressor": {
+            "mae": 268.6734037572835,
+            "r2": 0.9454365741873674
+        }
+    },
+    "features": [
+        "hour",
+        "day_of_week",
+        "is_weekend",
+        "hour_sin",
+        "hour_cos",
+        "day_sin",
+        "day_cos",
+        "holiday_flag",
+        "temp",
+        "rain_1h",
+        "snow_1h",
+        "clouds_all",
+        "is_low_visibility",
+        "is_severe_weather",
+        "weather_severity",
+        "weather_clear",
+        "weather_clouds",
+        "weather_drizzle",
+        "weather_fog",
+        "weather_haze",
+        "weather_mist",
+        "weather_rain",
+        "weather_smoke",
+        "weather_snow",
+        "weather_squall",
+        "weather_thunderstorm"
+    ]
+}
